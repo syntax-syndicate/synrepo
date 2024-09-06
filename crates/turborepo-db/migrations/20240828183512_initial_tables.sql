@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS runs (
-    id TEXT PRIMARY KEY, -- primary key should be uuid
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     start_time BIGINT NOT NULL,
     end_time BIGINT,
     exit_code INTEGER,
@@ -13,23 +13,56 @@ CREATE TABLE IF NOT EXISTS runs (
     client_id TEXT NOT NULL,
     client_name TEXT NOT NULL,
     client_version TEXT NOT NULL
+    full_turbo BOOLEAN NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    api_url TEXT NOT NULL,
+    login_url TEXT NOT NULL,
+    team_slug TEXT NOT NULL,
+    team_id TEXT NOT NULL,
+    signature BOOLEAN NOT NULL,
+    preflight BOOLEAN NOT NULL,
+    timeout INTEGER NOT NULL,
+    upload_timeout INTEGER NOT NULL,
+    enabled BOOLEAN NOT NULL,
+    spaces_id TEXT NOT NULL,
+    global_dependencies TEXT NOT NULL,
+    global_env TEXT NOT NULL,
+    global_pass_through_env TEXT NOT NULL,
+    tasks TEXT NOT NULL,
+    cache_dir TEXT NOT NULL,
+    root_turbo_json TEXT NOT NULL
+)
+
+CREATE TABLE IF NOT EXISTS packages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS package_dependencies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dependent_id INTEGER NOT NULL,
+    dependency_id INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tasks (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL,
     name TEXT NOT NULL,
-    package TEXT NOT NULL,
     hash TEXT NOT NULL,
+    package_id INTEGER NOT NULL,
     start_time INTEGER NOT NULL,
     end_time INTEGER NOT NULL,
-    cache_status TEXT NOT NULL,
+    cache_status TEXT NOT NULL
     exit_code INTEGER,
     logs TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS task_dependencies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id TEXT NOT NULL,
-    dependency_id TEXT NOT NULL
+    dependent_id INTEGER NOT NULL,
+    dependency_id INTEGER NOT NULL
 );

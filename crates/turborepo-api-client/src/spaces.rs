@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use async_graphql::{Enum, SimpleObject};
 use chrono::{DateTime, Local};
 use reqwest::Method;
@@ -53,6 +55,30 @@ pub enum CacheSource {
     Remote,
 }
 
+#[derive(Debug, Serialize, SimpleObject, PartialEq, Eq, Hash)]
+pub struct TaskId {
+    pub package: String,
+    pub task: String,
+}
+
+impl PartialOrd for TaskId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(
+            self.package
+                .cmp(&other.package)
+                .then_with(|| self.task.cmp(&other.task)),
+        )
+    }
+}
+
+impl Ord for TaskId {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.package
+            .cmp(&other.package)
+            .then_with(|| self.task.cmp(&other.task))
+    }
+}
+
 #[derive(Default, Debug, Serialize, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct SpaceTaskSummary {
@@ -64,8 +90,8 @@ pub struct SpaceTaskSummary {
     pub end_time: i64,
     pub cache: SpacesCacheStatus,
     pub exit_code: Option<i32>,
-    pub dependencies: Vec<String>,
-    pub dependents: Vec<String>,
+    pub dependencies: Option<HashSet<TaskId>>,
+    pub dependents: Option<HashSet<TaskId>>,
     #[serde(rename = "log")]
     pub logs: String,
 }

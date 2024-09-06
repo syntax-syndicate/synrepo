@@ -258,8 +258,8 @@ mod test {
                     time_saved: 0,
                 },
                 exit_code: Some(0),
-                dependencies: vec![],
-                dependents: vec![],
+                dependencies: None,
+                dependents: None,
                 logs: "".to_string(),
             },
         )

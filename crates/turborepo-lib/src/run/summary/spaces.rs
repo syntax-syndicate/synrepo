@@ -316,18 +316,23 @@ impl<'a> From<SpacesTaskInformation<'a>> for SpaceTaskSummary {
             exit_code,
             ..
         } = execution_summary;
-        fn stringify_nodes(deps: Option<HashSet<&crate::engine::TaskNode>>) -> Vec<String> {
-            deps.into_iter()
-                .flatten()
-                .filter_map(|node| match node {
-                    crate::engine::TaskNode::Root => None,
-                    crate::engine::TaskNode::Task(dependency) => Some(dependency.to_string()),
-                })
-                .sorted()
-                .collect()
+        fn convert_nodes(
+            deps: Option<HashSet<&crate::engine::TaskNode>>,
+        ) -> Option<HashSet<turborepo_api_client::spaces::TaskId>> {
+            let deps = deps?;
+            Some(
+                deps.into_iter()
+                    .filter_map(|node| match node {
+                        TaskNode::Root => None,
+                        TaskNode::Task(dependency) => Some(turborepo_api_client::spaces::TaskId {
+                            package: dependency.package().to_string(),
+                            task: dependency.task().to_string(),
+                        }),
+                    })
+                    .sorted()
+                    .collect(),
+            )
         }
-        let dependencies = stringify_nodes(dependencies);
-        let dependents = stringify_nodes(dependents);
 
         let cache = cache_status.map_or_else(
             SpacesCacheStatus::default,
@@ -356,8 +361,8 @@ impl<'a> From<SpacesTaskInformation<'a>> for SpaceTaskSummary {
             start_time,
             end_time,
             exit_code,
-            dependencies,
-            dependents,
+            dependencies: convert_nodes(dependencies),
+            dependents: convert_nodes(dependents),
             logs,
         }
     }
