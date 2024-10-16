@@ -43,6 +43,12 @@ it just guarantees setting this env var won't crash.
   .* (re)
   .* (re)
   .* (re)
+<<<<<<< HEAD
+||||||| parent of d99e930c9e (Fix test)
+  my-app:build: building
+=======
+  (my-app|util):build: building (re)
+>>>>>>> d99e930c9e (Fix test)
   util:build: building
   my-app:build: done
   util:build: completed
