@@ -25,8 +25,6 @@
   Cached:    0 cached, 2 total
     Time:\s*[\.0-9]+m?s  (re)
   
-   WARNING  no output files found for task my-app#build. Please check your `outputs` key in `turbo.json`
-   WARNING  no output files found for task util#build. Please check your `outputs` key in `turbo.json`
 
 The env var set to stream works (this is default, so this test doesn't guarantee the env var is "working"),
 it just guarantees setting this env var won't crash.
@@ -34,6 +32,7 @@ it just guarantees setting this env var won't crash.
   \xe2\x80\xa2 Packages in scope: my-app, util (esc)
   \xe2\x80\xa2 Running build in 2 packages (esc)
   \xe2\x80\xa2 Remote caching disabled (esc)
+  (my-app|util):build: cache bypass, force executing [0-9a-f]+ (re)
   (my-app|util):build: cache bypass, force executing [0-9a-f]+ (re)
   .* (re)
   .* (re)
@@ -44,7 +43,6 @@ it just guarantees setting this env var won't crash.
   .* (re)
   .* (re)
   .* (re)
-  my-app:build: building
   util:build: building
   my-app:build: done
   util:build: completed
@@ -53,14 +51,14 @@ it just guarantees setting this env var won't crash.
   Cached:    0 cached, 2 total
     Time:\s*[\.0-9]+m?s  (re)
   
-   WARNING  no output files found for task my-app#build. Please check your `outputs` key in `turbo.json`
-   WARNING  no output files found for task util#build. Please check your `outputs` key in `turbo.json`
 
 The flag wins over the env var
   $ TURBO_LOG_ORDER=grouped ${TURBO} run build --log-order stream --force
   \xe2\x80\xa2 Packages in scope: my-app, util (esc)
   \xe2\x80\xa2 Running build in 2 packages (esc)
   \xe2\x80\xa2 Remote caching disabled (esc)
+  (my-app|util):build: cache bypass, force executing [0-9a-f]+ (re)
+  (my-app|util):build: cache bypass, force executing [0-9a-f]+ (re)
   .* (re)
   .* (re)
   .* (re)
@@ -70,8 +68,6 @@ The flag wins over the env var
   .* (re)
   .* (re)
   .* (re)
-  (my-app|util):build:  (re)
-  (my-app:build): building (re)
   util:build: building
   my-app:build: done
   util:build: completed
@@ -80,6 +76,4 @@ The flag wins over the env var
   Cached:    0 cached, 2 total
     Time:\s*[\.0-9]+m?s  (re)
   
-   WARNING  no output files found for task my-app#build. Please check your `outputs` key in `turbo.json`
-   WARNING  no output files found for task util#build. Please check your `outputs` key in `turbo.json`
- 
+

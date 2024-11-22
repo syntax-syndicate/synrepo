@@ -77,6 +77,8 @@ pub(crate) struct RawRemoteCacheOptions {
     timeout: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     enabled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    upload_timeout: Option<u64>,
 }
 
 impl From<&RawRemoteCacheOptions> for ConfigurationOptions {
@@ -89,6 +91,7 @@ impl From<&RawRemoteCacheOptions> for ConfigurationOptions {
             signature: remote_cache_opts.signature,
             preflight: remote_cache_opts.preflight,
             timeout: remote_cache_opts.timeout,
+            upload_timeout: remote_cache_opts.upload_timeout,
             enabled: remote_cache_opts.enabled,
             ..Self::default()
         }
@@ -219,6 +222,8 @@ pub struct RawTaskDefinition {
     #[serde(skip_serializing_if = "Option::is_none")]
     persistent: Option<Spanned<bool>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    interruptible: Option<Spanned<bool>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     outputs: Option<Vec<Spanned<UnescapedString>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     output_logs: Option<Spanned<OutputLogsMode>>,
@@ -257,6 +262,7 @@ impl RawTaskDefinition {
         set_field!(self, other, inputs);
         set_field!(self, other, output_logs);
         set_field!(self, other, persistent);
+        set_field!(self, other, interruptible);
         set_field!(self, other, env);
         set_field!(self, other, pass_through_env);
         set_field!(self, other, interactive);
@@ -328,6 +334,13 @@ impl TryFrom<RawTaskDefinition> for TaskDefinition {
             if cache && interactive.value {
                 return Err(Error::InteractiveNoCacheable { span, text });
             }
+        }
+
+        let persistent = *raw_task.persistent.unwrap_or_default();
+        let interruptible = raw_task.interruptible.unwrap_or_default();
+        if *interruptible && !persistent {
+            let (span, text) = interruptible.span_and_text("turbo.json");
+            return Err(Error::InterruptibleButNotPersistent { span, text });
         }
 
         let mut env_var_dependencies = HashSet::new();
@@ -407,7 +420,8 @@ impl TryFrom<RawTaskDefinition> for TaskDefinition {
             inputs,
             pass_through_env,
             output_logs: *raw_task.output_logs.unwrap_or_default(),
-            persistent: *raw_task.persistent.unwrap_or_default(),
+            persistent,
+            interruptible: *interruptible,
             interactive,
             env_mode: raw_task.env_mode,
         })
@@ -597,6 +611,26 @@ impl TurboJson {
             .iter()
             .any(|(task_name, _)| task_name.package() == Some(ROOT_PKG_NAME))
     }
+
+    /// Adds a local proxy task to a workspace TurboJson
+    pub fn with_proxy(&mut self, mfe_package_name: Option<&str>) {
+        if self.extends.is_empty() {
+            self.extends = Spanned::new(vec!["//".into()]);
+        }
+
+        self.tasks.insert(
+            TaskName::from("proxy"),
+            Spanned::new(RawTaskDefinition {
+                cache: Some(Spanned::new(false)),
+                depends_on: mfe_package_name.map(|mfe_package_name| {
+                    Spanned::new(vec![Spanned::new(UnescapedString::from(format!(
+                        "{mfe_package_name}#build"
+                    )))])
+                }),
+                ..Default::default()
+            }),
+        );
+    }
 }
 
 type TurboJSONValidation = fn(&TurboJson) -> Vec<Error>;
@@ -720,7 +754,8 @@ mod tests {
           "inputs": ["package/a/src/**"],
           "outputLogs": "full",
           "persistent": true,
-          "interactive": true
+          "interactive": true,
+          "interruptible": true
         }"#,
         RawTaskDefinition {
             depends_on: Some(Spanned::new(vec![Spanned::<UnescapedString>::new("cli#build".into()).with_range(26..37)]).with_range(25..38)),
@@ -732,6 +767,7 @@ mod tests {
             output_logs: Some(Spanned::new(OutputLogsMode::Full).with_range(246..252)),
             persistent: Some(Spanned::new(true).with_range(278..282)),
             interactive: Some(Spanned::new(true).with_range(309..313)),
+            interruptible: Some(Spanned::new(true).with_range(342..346)),
             env_mode: None,
         },
         TaskDefinition {
@@ -748,6 +784,7 @@ mod tests {
           topological_dependencies: vec![],
           persistent: true,
           interactive: true,
+          interruptible: true,
           env_mode: None,
         }
       ; "full"
@@ -761,7 +798,8 @@ mod tests {
               "cache": false,
               "inputs": ["package\\a\\src\\**"],
               "outputLogs": "full",
-              "persistent": true
+              "persistent": true,
+              "interruptible": true
             }"#,
         RawTaskDefinition {
             depends_on: Some(Spanned::new(vec![Spanned::<UnescapedString>::new("cli#build".into()).with_range(30..41)]).with_range(29..42)),
@@ -772,6 +810,7 @@ mod tests {
             inputs: Some(vec![Spanned::<UnescapedString>::new("package\\a\\src\\**".into()).with_range(227..248)]),
             output_logs: Some(Spanned::new(OutputLogsMode::Full).with_range(279..285)),
             persistent: Some(Spanned::new(true).with_range(315..319)),
+            interruptible: Some(Spanned::new(true).with_range(352..356)),
             interactive: None,
             env_mode: None,
         },
@@ -788,6 +827,7 @@ mod tests {
             task_dependencies: vec![Spanned::<TaskName<'_>>::new("cli#build".into()).with_range(30..41)],
             topological_dependencies: vec![],
             persistent: true,
+            interruptible: true,
             interactive: false,
             env_mode: None,
         }
