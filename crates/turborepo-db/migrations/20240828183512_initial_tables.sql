@@ -60,9 +60,3 @@ CREATE TABLE IF NOT EXISTS tasks (
     exit_code INTEGER,
     logs TEXT NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS task_dependencies (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    dependent_id INTEGER NOT NULL,
-    dependency_id INTEGER NOT NULL
-);

@@ -199,8 +199,10 @@ impl DatabaseHandle {
               end_time,
               cache_status,
               exit_code,
-              logs
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+              logs,
+              dependencies,
+              dependents
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
         )
         .bind(id.to_string())
         .bind(&summary.name)
@@ -211,6 +213,8 @@ impl DatabaseHandle {
         .bind(serde_json::to_string(&summary.cache)?)
         .bind(summary.exit_code)
         .bind(&summary.logs)
+        .bind(serde_json::to_string(&summary.dependencies)?)
+        .bind(serde_json::to_string(&summary.dependents)?)
         .execute(&self.pool)
         .await?;
 
