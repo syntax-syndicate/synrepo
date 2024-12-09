@@ -1,9 +1,9 @@
-use std::collections::HashSet;
+use std::{backtrace::Backtrace, collections::HashSet, str::FromStr};
 
 use async_graphql::{Enum, SimpleObject};
 use chrono::{DateTime, Local};
 use reqwest::Method;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use turbopath::AnchoredSystemPath;
 use turborepo_vercel_api::SpaceRun;
 
@@ -48,6 +48,21 @@ pub enum CacheStatus {
     Miss,
 }
 
+impl FromStr for CacheStatus {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "HIT" => Ok(Self::Hit),
+            "MISS" => Ok(Self::Miss),
+            _ => Err(Error::UnknownCachingStatus(
+                s.to_string(),
+                Backtrace::capture(),
+            )),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Copy, Clone, PartialEq, Eq, Enum)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum CacheSource {
@@ -55,7 +70,7 @@ pub enum CacheSource {
     Remote,
 }
 
-#[derive(Debug, Serialize, SimpleObject, PartialEq, Eq, Hash)]
+#[derive(Debug, Deserialize, Serialize, SimpleObject, PartialEq, Eq, Hash)]
 pub struct TaskId {
     pub package: String,
     pub task: String,

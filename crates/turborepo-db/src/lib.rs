@@ -99,22 +99,42 @@ impl DatabaseHandle {
         )
         .bind(run_id.to_string());
         Ok(query
-            .map(|row: SqliteRow| SpaceTaskSummary {
-                key: row.get("key"),
-                name: row.get("name"),
-                workspace: row.get("workspace"),
-                hash: row.get("hash"),
-                start_time: row.get("start_time"),
-                end_time: row.get("end_time"),
-                cache: SpacesCacheStatus {
-                    status: row.get("cache_status"),
-                    source: None,
-                    time_saved: row.get("time_saved"),
-                },
-                exit_code: row.get("exit_code"),
-                dependencies: row.get("dependencies"),
-                dependents: row.get("dependents"),
-                logs: row.get("logs"),
+            .try_map(|row: SqliteRow| {
+                let dependencies: Option<String> = row.get("dependencies");
+                let dependents: Option<String> = row.get("dependents");
+                let cache_status: String = row.get("cache_status");
+
+                let dependencies = dependencies
+                    .as_deref()
+                    .map(serde_json::from_str)
+                    .transpose()
+                    .map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+                let dependents = dependents
+                    .as_deref()
+                    .map(serde_json::from_str)
+                    .transpose()
+                    .map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+                Ok(SpaceTaskSummary {
+                    key: row.get("key"),
+                    name: row.get("name"),
+                    workspace: row.get("workspace"),
+                    hash: row.get("hash"),
+                    start_time: row.get("start_time"),
+                    end_time: row.get("end_time"),
+                    cache: SpacesCacheStatus {
+                        status: cache_status
+                            .parse()
+                            .map_err(|err| sqlx::Error::Decode(Box::new(err)))?,
+                        source: None,
+                        time_saved: row.get("time_saved"),
+                    },
+                    exit_code: row.get("exit_code"),
+                    dependencies,
+                    dependents,
+                    logs: row.get("logs"),
+                })
             })
             .fetch_all(&self.pool)
             .await?)
