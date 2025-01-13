@@ -60,7 +60,7 @@ impl ConfigV2 {
         .consume();
 
         if let Some(config) = config {
-            if config.version == "2" {
+            if config.version == "2" || config.version.is_empty() {
                 Ok(ParseResult::Actual(config))
             } else {
                 Err(Error::InvalidVersion {
