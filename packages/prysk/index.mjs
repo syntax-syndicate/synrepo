@@ -53,7 +53,7 @@ try {
 
 function patchPytestPrysk() {
   // Only patches on windows
-  if (false && !isWindows) {
+  if (!isWindows) {
     return;
   }
 
