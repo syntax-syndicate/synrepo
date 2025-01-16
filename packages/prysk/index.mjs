@@ -53,12 +53,17 @@ try {
 
 function patchPytestPrysk() {
   // Only patches on windows
-  if (!isWindows) {
+  if (false && !isWindows) {
     return;
   }
 
   const initPath = ["pytest_prysk", "__init__.py"];
-  const sitePackages = path.join(DIRECTORY, VENV_NAME, "lib", "site-packages");
+  const sitePackages = path.join(
+    DIRECTORY,
+    VENV_NAME,
+    "lib",
+    isWindows ? "site-packages" : "python3.12/site-packages"
+  );
   const pluginPath = path.join(sitePackages, ...initPath);
   console.log(`Patching pytest plugin: ${pluginPath}`);
 
