@@ -51,9 +51,9 @@ try {
   process.exit(1);
 }
 
-// Only patches on windows
 function patchPytestPrysk() {
-  if (!isWindows) {
+  // Only patches on windows
+  if (false && !isWindows) {
     return;
   }
 
