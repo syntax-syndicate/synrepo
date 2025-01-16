@@ -26,6 +26,10 @@ execSync(
 );
 
 patchPytestPrysk();
+execSync(`${getVenvBin("pip")} show pytest_prysk -f`, {
+  stdio: "inherit",
+  env: process.env,
+});
 
 const flags = [
   isWindows
@@ -33,8 +37,6 @@ const flags = [
     : "--prysk-shell=bash",
   process.env.PRYSK_INTERACTIVE === "true" ? "--interactive" : "",
   isWindows ? "--prysk-dos2unix=true" : "",
-  "--capture=fd",
-  isWindows ? "tests\\" : "tests/",
 ].join(" ");
 
 const cmd = [getVenvBin("pytest"), flags].join(" ");
