@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
 import path from "node:path";
+import fs from "node:fs";
 
 // TODO: make this customizable?
 const DIRECTORY = process.cwd();
@@ -24,6 +25,8 @@ execSync(
   )} install "pytest==8.3.3" "prysk[pytest-plugin]==0.15.2" "pytest-prysk==0.4.0" "pytest-xdist==3.6.1"`
 );
 
+patchPytestPrysk();
+
 const flags = [
   isWindows
     ? "--prysk-shell=C:\\Program Files\\Git\\bin\\bash.EXE"
@@ -44,6 +47,25 @@ try {
   // already have the test failures printed. We don't need the Node.js
   // execution to also print its stack trace from execSync.
   process.exit(1);
+}
+
+// Only patches on windows
+function patchPytestPrysk() {
+  if (!isWindows) {
+    return;
+  }
+
+  const initPath = ["pytest_prysk", "__init__.py"];
+  const pluginPath = path.join(
+    DIRECTORY,
+    VENV_NAME,
+    "Lib",
+    "site-packages",
+    ...initPath
+  );
+  console.log(`Patching pytest plugin: ${pluginPath}`);
+
+  fs.copyFileSync(pluginPath, path.join(...initPath));
 }
 
 function getVenvBin(tool) {
