@@ -120,11 +120,7 @@ jobs:
 
   rust_lint:
     name: Rust lints
-    runs-on:
-      - "self-hosted"
-      - "linux"
-      - "x64"
-      - "metal"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -153,11 +149,7 @@ jobs:
   rust_check:
     # We test dependency changes only on main
     name: Turborepo rust check
-    runs-on:
-      - "self-hosted"
-      - "linux"
-      - "x64"
-      - "metal"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -178,18 +170,11 @@ jobs:
       matrix:
         os:
           - name: ubuntu
-            runner:
-              - "self-hosted"
-              - "linux"
-              - "x64"
-              - "metal"
-            nextest: linux
+            runner: ubuntu-latest
           - name: macos
             runner: macos-13
-            nextest: mac
           - name: windows
             runner: windows-latest
-            nextest: windows-tar
     runs-on: ${{ matrix.os.runner }}
     name: Turborepo Rust testing on ${{ matrix.os.name }}
     steps:
