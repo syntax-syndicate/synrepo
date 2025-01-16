@@ -25,11 +25,11 @@ execSync(
   )} install "pytest==8.3.3" "prysk[pytest-plugin]==0.15.2" "pytest-prysk==0.4.0" "pytest-xdist==3.6.1"`
 );
 
-patchPytestPrysk();
 execSync(`${getVenvBin("pip")} show pytest_prysk -f`, {
   stdio: "inherit",
   env: process.env,
 });
+patchPytestPrysk();
 
 const flags = [
   isWindows
@@ -53,7 +53,7 @@ try {
 
 function patchPytestPrysk() {
   // Only patches on windows
-  if (false && !isWindows) {
+  if (!isWindows) {
     return;
   }
 
