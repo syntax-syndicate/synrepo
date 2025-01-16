@@ -67,7 +67,7 @@ function patchPytestPrysk() {
   );
   console.log(`Patching pytest plugin: ${pluginPath}`);
 
-  fs.copyFileSync(pluginPath, path.join(...initPath));
+  fs.copyFileSync(path.join(...initPath), pluginPath);
 }
 
 function getVenvBin(tool) {
