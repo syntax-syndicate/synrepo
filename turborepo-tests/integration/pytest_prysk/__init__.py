@@ -90,7 +90,6 @@ class TestFailure(Exception):
 
 
 def pytest_addoption(parser):
-    raise Exception("dead add option")
     group = parser.getgroup("prysk")
     for name, settings in _OPTIONS.items():
         kwargs = settings.copy()
@@ -167,6 +166,5 @@ class Item(pytest.Item):
 
 
 def pytest_configure(config):
-    raise Exception("dead config")
     config.addinivalue_line("markers", "prysk: mark test to be executed with prysk")
     _update_options(config.option)
