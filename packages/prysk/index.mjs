@@ -61,7 +61,7 @@ function patchPytestPrysk() {
   const pluginPath = path.join(
     DIRECTORY,
     VENV_NAME,
-    "Lib",
+    "lib",
     "site-packages",
     ...initPath
   );
