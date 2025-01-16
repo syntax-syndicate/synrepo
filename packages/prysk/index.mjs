@@ -58,16 +58,15 @@ function patchPytestPrysk() {
   }
 
   const initPath = ["pytest_prysk", "__init__.py"];
-  const pluginPath = path.join(
-    DIRECTORY,
-    VENV_NAME,
-    "lib",
-    "site-packages",
-    ...initPath
-  );
+  const sitePackages = path.join(DIRECTORY, VENV_NAME, "lib", "site-packages");
+  const pluginPath = path.join(sitePackages, ...initPath);
   console.log(`Patching pytest plugin: ${pluginPath}`);
 
   fs.copyFileSync(path.join(...initPath), pluginPath);
+  fs.rmSync(path.join(sitePackages, "__pycache__"), {
+    recursive: true,
+    force: true,
+  });
 }
 
 function getVenvBin(tool) {
