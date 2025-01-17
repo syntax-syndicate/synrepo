@@ -98,7 +98,6 @@ def pytest_addoption(parser):
 
 
 def pytest_collect_file(parent, file_path):
-    raise Exception("dead collecting")
     def is_hidden(path):
         """Check if a path (file/dir) is hidden or not."""
 
@@ -116,7 +115,6 @@ def pytest_collect_file(parent, file_path):
         """Check if path is a valid prysk test file"""
         return path.suffix == ".t" and not is_hidden(path)
 
-    raise Exception(str(file_path))
     if is_a_prysk_file(file_path):
         return File.from_parent(parent, path=file_path)
 
