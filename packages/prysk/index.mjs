@@ -30,10 +30,11 @@ execSync(`${getVenvBin("pip")} show pytest_prysk -f`, {
   env: process.env,
 });
 patchPytestPrysk();
-execSync(`${getVenvBin("pytest")} --co`, {
+execSync(`${getVenvBin("pytest")} --co --debug=logs.txt`, {
   stdio: "inherit",
   env: process.env,
 });
+console.log(fs.readFileSync("logs.txt", "utf-8"));
 const flags = [
   isWindows
     ? "--prysk-shell=C:\\Program Files\\Git\\bin\\bash.EXE"
