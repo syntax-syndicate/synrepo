@@ -22,7 +22,7 @@ execSync(`${getVenvBin("python3")} -m pip install --quiet --upgrade pip`);
 execSync(
   `${getVenvBin(
     "pip"
-  )} install "pytest==8.0.2" "prysk[pytest-plugin]==0.15.2" "pytest-prysk==0.4.0" "pytest-xdist==3.6.1"`
+  )} install "pytest==8.3.4" "prysk[pytest-plugin]==0.15.2" "pytest-prysk==0.4.0" "pytest-xdist==3.6.1"`
 );
 
 execSync(`${getVenvBin("pip")} show pytest_prysk -f`, {
